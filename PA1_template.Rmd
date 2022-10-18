@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Loading and preprocessing the data
 
-It is required that data source file is already in a working directory. I check if the source file is unzipped and if it is not - I unzip it and load the data. Then I delete NA observations, since I do not need it for calculations.
+### It is required that data source file is already in a working directory. I check if the source file is unzipped and if it is not - I unzip it and load the data. Then I delete NA observations, since I do not need it for calculations.
 
 ```{r}
 if (!file.exists("activity.csv") ) {
@@ -21,7 +21,7 @@ raw_data <- read.csv("activity.csv", header = TRUE)
 main_data <- na.omit(raw_data)
 ```
 
-Then I explore the data with functions ‘str’, ‘head’, ‘tail’, ‘table’ (for each column) in order to get aquianted with it.
+### Then I explore the data with functions ‘str’, ‘head’, ‘tail’, ‘table’ (for each column) in order to get aquianted with it.
 
 ## What is mean total number of steps taken per day?
 
@@ -29,7 +29,7 @@ Then I explore the data with functions ‘str’, ‘head’, ‘tail’, ‘tab
 steps_per_day <- aggregate(main_data$steps, by = list(Steps.Date = main_data$date), FUN = "sum")
 ```
 
-Then I make a histogram with the frequency ot total numbers
+### Then I make a histogram with the frequency ot total numbers
 
 ```{r}
 hist(steps_per_day$x, col = "blue", 
@@ -38,7 +38,7 @@ hist(steps_per_day$x, col = "blue",
      xlab = "Number of steps per day")
 ```
 
-And I calculate the mean and median of the total number of steps
+### And I calculate the mean and median of the total number of steps
 
 ```{r}
 mean_steps <- mean(steps_per_day[,2])
@@ -52,7 +52,7 @@ print (median_steps)
 
 ## What is the average daily activity pattern?
 
-At first, we can look at the plot of the number of steps taken averaged across all days, along all 5-min intervals
+### At first, we can look at the plot of the number of steps taken averaged across all days, along all 5-min intervals
 
 ```{r}
 avaraged_day <- aggregate(main_data$steps, 
@@ -64,7 +64,7 @@ plot(avaraged_day$Interval, avaraged_day$x, type = "l",
      xlab = "5-min intervals")
 ```
 
-Then we define the interval with the maximum number of steps
+### Then we define the interval with the maximum number of steps
 
 ```{r}
 interval_row <- which.max(avaraged_day$x)
@@ -74,7 +74,46 @@ print (max_interval)
 
 ## Imputing missing values
 
+### I calculate the total number of NA values in the dataset
 
+```{r}
+NA_number <- length(which(is.na(raw_data$steps)))
+print (NA_number)
+```
+
+### For substituting NA values I use simple ‘impute’ function in ‘Hmisc’ package (it is implied that this package is installed). I create a new dataset with the missing data filled in.
+
+```{r}
+library(Hmisc)
+raw_data_filled <- raw_data
+raw_data_filled$steps <- impute(raw_data$steps, fun=mean)
+```
+
+### Then I make histogram with the new frequencies of total number of steps after imputing.
+
+```{r}
+steps_per_day_noNA <- aggregate(raw_data_filled$steps, 
+                                by = list(Steps.Date = raw_data_filled$date), 
+                                FUN = "sum")
+hist(steps_per_day_noNA$x, col = "green", 
+     breaks = 20,
+     main = "Total number of steps taken each day (filled data)",
+     xlab = "Number of steps per day")
+```
+
+### And I calculate the new mean and median of the total number of steps after imputing.
+
+```{r}
+mean_steps_noNA <- mean(steps_per_day_noNA[,2])
+print (mean_steps_noNA)
+```
+
+```{r}
+median_steps_noNA <- median(steps_per_day_noNA[,2])
+print (median_steps_noNA)
+```
+
+### As we can see, new figures are almost the same as before filling NA values. The median has changed a bit and became equal to the mean.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
