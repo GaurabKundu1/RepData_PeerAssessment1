@@ -23,4 +23,31 @@ main_data <- na.omit(raw_data)
 
 Then I explore the data with functions ‘str’, ‘head’, ‘tail’, ‘table’ (for each column) in order to get aquianted with it.
 
+## What is mean total number of steps taken per day?
+
+```{r}
+steps_per_day <- aggregate(main_data$steps, by = list(Steps.Date = main_data$date), FUN = "sum")
+```
+
+Then I make a histogram with the frequency ot total numbers
+
+```{r}
+hist(steps_per_day$x, col = "blue", 
+     breaks = 20,
+     main = "Total number of steps taken each day",
+     xlab = "Number of steps per day")
+```
+
+And I calculate the mean and median of the total number of steps
+
+```{r}
+mean_steps <- mean(steps_per_day[,2])
+print (mean_steps)
+```
+
+```{r}
+median_steps <- median(steps_per_day[,2])
+print (median_steps)
+```
+
 
