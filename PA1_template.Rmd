@@ -58,7 +58,8 @@ print (median_steps)
 avaraged_day <- aggregate(main_data$steps, 
                           by = list(Interval = main_data$interval), 
                           FUN = "mean")
-plot(avaraged_day$Interval, avaraged_day$x, type = "l", 
+plot(avaraged_day$Interval, avaraged_day$x, col="red",
+     type = "l", 
      main = "Average daily activity pattern", 
      ylab = "Avarage number of steps taken", 
      xlab = "5-min intervals")
@@ -116,4 +117,25 @@ print (median_steps_noNA)
 ### As we can see, new figures are almost the same as before filling NA values. The median has changed a bit and became equal to the mean.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+### 1. Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+
+```{r}
+# Just recreating activityDT from scratch then making the new factor variable. (No need to, just want to be clear on what the entire process is.) 
+activityDT <- data.table::fread(input = "E:/JOHNS HOPKINS UNIVERSITY/Data Science Specialization/5 Reproducible Research/Week 2/RepData_PeerAssessment1/activity.csv")
+activityDT[, date := as.POSIXct(date, format = "%Y-%m-%d")]
+activityDT[, `Day of Week`:= weekdays(x = date)]
+activityDT[grepl(pattern = "Monday|Tuesday|Wednesday|Thursday|Friday", x = `Day of Week`), "weekday or weekend"] <- "weekday"
+activityDT[grepl(pattern = "Saturday|Sunday", x = `Day of Week`), "weekday or weekend"] <- "weekend"
+activityDT[, `weekday or weekend` := as.factor(`weekday or weekend`)]
+head(activityDT, 10)
+```
+
+### 2. Make a panel plot containing a time series plot (i.e. 𝚝𝚢𝚙𝚎 = "𝚕") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+
+```{r}
+activityDT[is.na(steps), "steps"] <- activityDT[, c(lapply(.SD, median, na.rm = TRUE)), .SDcols = c("steps")]
+IntervalDT <- activityDT[, c(lapply(.SD, mean, na.rm = TRUE)), .SDcols = c("steps"), by = .(interval, `weekday or weekend`)] 
+ggplot(IntervalDT , aes(x = interval , y = steps, color=`weekday or weekend`)) + geom_line() + labs(title = "Avg. Daily Steps by Weektype", x = "Interval", y = "No. of Steps") + facet_wrap(~`weekday or weekend` , ncol = 1, nrow=2)
+
 
